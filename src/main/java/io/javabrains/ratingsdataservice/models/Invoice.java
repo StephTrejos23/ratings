@@ -1,14 +1,25 @@
 package io.javabrains.ratingsdataservice.models;
 
+import jakarta.persistence.*;
+import org.springframework.format.annotation.DateTimeFormat;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Entity
 public class Invoice {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "customer_id", referencedColumnName = "id")
     private Customer customer;
+    @Column(name = "date_time")
     private LocalDateTime dateTime;
+    @Column(name = "expired_date")
     private LocalDate expiredDate;
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "invoice", cascade = CascadeType.ALL)
     private List<InvoiceDetail> invoiceDetails;
 
     public Invoice() {

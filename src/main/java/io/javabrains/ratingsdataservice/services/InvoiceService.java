@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class InvoiceService {
@@ -36,7 +38,7 @@ public class InvoiceService {
     }
 
     public void modifyInvoice(Invoice invoice) {
-        if (invoiceRepository.getInvoice(invoice.getId()) == null) {
+        if (!existInvoice(invoice.getId())) {
             throw new IllegalArgumentException("The invoice does not exist");
         }
         validateInvoice(invoice);
@@ -45,26 +47,39 @@ public class InvoiceService {
     }
 
     public void deleteInvoice(int id) {
-        if (invoiceRepository.getInvoice(id) == null) {
+        if (!existInvoice(id)) {
             throw new IllegalArgumentException("The invoice does not exist");
         }
-        invoiceRepository.delete(id);
+        invoiceRepository.deleteById(id);
     }
 
-    public Invoice getInvoice(int id) {
+    public Optional<Invoice> getInvoice(int id) {
 
-        return invoiceRepository.getInvoice(id);
+        return invoiceRepository.findById(id);
+    }
+
+    public Optional<Invoice> getInvoice(Integer id) {
+        return invoiceRepository.findById(id);
+    }
+
+    public boolean existInvoice(Integer id) {
+        return getInvoice(id).isPresent();
+    }
+
+    public List<Invoice> getInvoices() {
+        return invoiceRepository.findAll();
     }
 
     private void validateInvoice(Invoice invoice) {
         if (LocalDate.now().isAfter(invoice.getExpiredDate())) {
             throw new IllegalArgumentException("The invoice is expired");
         }
-        if (customerRepository.getCustomer(invoice.getCustomer().getId()) == null) {
+        if (customerRepository.findById(invoice.getCustomer().getId()).isEmpty()) {
             throw new IllegalArgumentException("The customer does not exist");
         }
-        for(InvoiceDetail invoiceDetail : invoice.getInvoiceDetails()){
+        for (InvoiceDetail invoiceDetail : invoice.getInvoiceDetails()) {
             invoiceDetailService.validateInvoiceDetails(invoiceDetail);
         }
     }
+
 }

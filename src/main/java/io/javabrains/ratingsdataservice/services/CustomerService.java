@@ -1,16 +1,24 @@
 package io.javabrains.ratingsdataservice.services;
 
 import io.javabrains.ratingsdataservice.models.Customer;
+import io.javabrains.ratingsdataservice.models.Product;
+import io.javabrains.ratingsdataservice.models.Supplier;
 import io.javabrains.ratingsdataservice.repository.CustomerRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
 @Service
 public class CustomerService {
+
     private final CustomerRepository customerRepository;
 
     public CustomerService(CustomerRepository customerRepository) {
         this.customerRepository = customerRepository;
-
     }
 
     public void addCustomer(Customer customer) {
@@ -19,7 +27,7 @@ public class CustomerService {
     }
 
     public void modifyCustomer(Customer customer) {
-        if (customerRepository.getCustomer(customer.getId()) == null) {
+        if (!existCustomer(customer.getId())) {
             throw new IllegalArgumentException("The customer does not exist");
         }
         validateCustomer(customer);
@@ -28,19 +36,31 @@ public class CustomerService {
     }
 
     public void deleteCustomer(int id) {
-        if (customerRepository.getCustomer(id) == null) {
+        if (!existCustomer(id)) {
             throw new IllegalArgumentException("The customer does not exist");
         }
-        customerRepository.delete(id);
+        customerRepository.deleteById(id);
     }
 
-    public Customer getCustomer(int id) {
+    public Optional<Customer> getCustomer(int id) {
+        return customerRepository.findById(id);
+    }
 
-        return customerRepository.getCustomer(id);
+    public Optional<Customer> getCustomer(Integer id) {
+
+        return customerRepository.findById(id);
+    }
+
+    public boolean existCustomer(int id) {
+        return getCustomer(id).isPresent();
+    }
+
+    public List<Customer> getCustomer() {
+        return customerRepository.findAll();
     }
 
     private static void validateCustomer(Customer customer) {
-    if (customer.getEmail()!= null && !customer.getEmail().contains("@")) {
+        if (customer.getEmail() != null && !customer.getEmail().contains("@")) {
             throw new IllegalArgumentException("Email must contain an @.");
         }
 
@@ -55,6 +75,10 @@ public class CustomerService {
 
     public int division(int value1, int value2) {
         return value1 / value2;
+    }
+
+    public List<Customer> getCustomers() {
+        return customerRepository.findAll();
     }
 }
 

@@ -1,11 +1,22 @@
 package io.javabrains.ratingsdataservice.models;
 
+import jakarta.persistence.*;
+
+@Entity
 public class InvoiceDetail {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // agrega un id secuencial automatico
     private int id;
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "invoice_id")
     private Invoice invoice;
+    @OneToOne(cascade = CascadeType.ALL)
     private Product product;
+    @Column(name = "price")
     private float price;
+    @Column(name = "amount")
     private int amount;
+    @Column(name = "taxes")
     private float taxes;
 
     public InvoiceDetail() {

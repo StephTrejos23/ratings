@@ -6,6 +6,9 @@ import io.javabrains.ratingsdataservice.repository.SupplierRepository;
 import io.micrometer.common.util.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Optional;
+
 @Service
 public class SupplierService {
     private final SupplierRepository supplierRepository;
@@ -25,20 +28,23 @@ public class SupplierService {
     }
 
     public void deleteSupplier(Integer id) {
-        if (supplierRepository.getSupplier(id) == null) {
+        if (!existSupplier(id)) {
             throw new IllegalArgumentException("The supply does not exist");
         }
-        supplierRepository.delete(id);
+        supplierRepository.deleteById(id);
     }
 
-    public Supplier getSupplier(Integer id) {
+    public Optional<Supplier> getSupplier(Integer id) {
 
-        return supplierRepository.getSupplier(id);
+        return supplierRepository.findById(id);
     }
 
     public boolean existSupplier(int id) {
+        return getSupplier(id).isPresent();
+    }
 
-        return supplierRepository.getSupplier(id) != null;
+    public List<Supplier> getSuppliers() {
+        return supplierRepository.findAll();
     }
 
     private void validateSupplier(Supplier supplier) {

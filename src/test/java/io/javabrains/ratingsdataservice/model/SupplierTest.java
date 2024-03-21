@@ -1,7 +1,5 @@
 package io.javabrains.ratingsdataservice.model;
 
-import io.javabrains.ratingsdataservice.models.Customer;
-import io.javabrains.ratingsdataservice.models.Product;
 import io.javabrains.ratingsdataservice.models.Supplier;
 import io.javabrains.ratingsdataservice.repository.SupplierRepository;
 import io.javabrains.ratingsdataservice.services.SupplierService;
@@ -15,13 +13,16 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDate;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class SupplierTest {
+
+
     @Mock
     private SupplierRepository supplierRepository;
 
@@ -96,7 +97,7 @@ public class SupplierTest {
         int supplierId=1;
         final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> supplierService.deleteSupplier(supplierId));
         assertEquals("The supply does not exist", exception.getMessage());
-        verify(supplierRepository, times(1)).getSupplier(supplierId);
+        verify(supplierRepository, times(1)).findById(supplierId);
         verifyNoMoreInteractions(supplierRepository);
     }
 
@@ -104,10 +105,10 @@ public class SupplierTest {
     void deleteSupplier2() {
         int supplierId=1;
         Supplier supplier= new Supplier();
-        when(supplierRepository.getSupplier(supplierId)).thenReturn(supplier);
+        when(supplierRepository.findById(supplierId)).thenReturn(Optional.of(supplier));
         supplierService.deleteSupplier(supplierId);
-        verify(supplierRepository, times(1)).getSupplier(supplierId);
-        verify(supplierRepository, times(1)).delete(supplierId);
+        verify(supplierRepository, times(1)).findById(supplierId);
+        verify(supplierRepository, times(1)).deleteById(supplierId);
         verifyNoMoreInteractions(supplierRepository);
     }
 
@@ -115,10 +116,10 @@ public class SupplierTest {
     void getSupplier1() {
         int supplierId = 1;
         Supplier supplier= new Supplier();
-        when(supplierRepository.getSupplier(supplierId)).thenReturn(supplier);
-        Supplier result = supplierService.getSupplier(supplierId);
-        assertEquals(supplier, result);
-        verify(supplierRepository, times(1)).getSupplier(supplierId);
+        when(supplierRepository.findById(supplierId)).thenReturn(Optional.of(supplier));
+        Optional<Supplier> result = supplierService.getSupplier(supplierId);
+        assertEquals(Optional.of(supplier), result);
+        verify(supplierRepository, times(1)).findById(supplierId);
         verifyNoMoreInteractions(supplierRepository);
     }
 
@@ -126,10 +127,10 @@ public class SupplierTest {
     void existSupplier1(){
         int supplierId=1;
         Supplier supplier= new Supplier();
-        when(supplierRepository.getSupplier(supplierId)).thenReturn(supplier);
+        when(supplierRepository.findById(supplierId)).thenReturn(Optional.of(supplier));
         boolean existSupplier = supplierService.existSupplier(supplierId);
         assertTrue(existSupplier);
-        verify(supplierRepository, times(1)).getSupplier(supplierId);
+        verify(supplierRepository, times(1)).findById(supplierId);
         verifyNoMoreInteractions(supplierRepository);
 
     }
@@ -139,8 +140,20 @@ public class SupplierTest {
         int supplierId=1;
         boolean existSupplier = supplierService.existSupplier(supplierId);
         assertFalse(existSupplier);
-        verify(supplierRepository, times(1)).getSupplier(supplierId);
+        verify(supplierRepository, times(1)).findById(supplierId);
         verifyNoMoreInteractions(supplierRepository);
 
     }
+
+
+
+//    @Test
+//    void jghvgfhg(){
+//        Properties systemProps = System.getProperties();
+//        systemProps.put("javax.net.ssl.keyStorePassword","passwordForKeystore");
+//        systemProps.put("javax.net.ssl.keyStore","pathToKeystore.ks");
+//        systemProps.put("javax.net.ssl.trustStore", "pathToTruststore.ts");
+//        systemProps.put("javax.net.ssl.trustStorePassword","passwordForTrustStore");
+//        System.setProperties(systemProps);
+//    }
 }

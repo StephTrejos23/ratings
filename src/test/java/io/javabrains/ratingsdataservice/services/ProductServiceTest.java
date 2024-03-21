@@ -1,7 +1,9 @@
 package io.javabrains.ratingsdataservice.services;
 
 import io.javabrains.ratingsdataservice.models.Product;
+import io.javabrains.ratingsdataservice.models.Supplier;
 import io.javabrains.ratingsdataservice.repository.ProductRepository;
+import io.javabrains.ratingsdataservice.repository.SupplierRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -9,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -19,6 +22,7 @@ public class ProductServiceTest {
 
     @Mock
     private ProductRepository productRepository;
+    private SupplierRepository supplierRepository;
 
     @InjectMocks
     private ProductService productService;
@@ -58,11 +62,21 @@ public class ProductServiceTest {
     @Test
     void test4() {
         Product product = new Product(null, "Lizano", LocalDate.now().plusDays(1), 4500);
+
+        final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> productService.add(product));
+        assertEquals("Supplier does not exist", exception.getMessage());
+
+        verifyNoInteractions(productRepository);
+    }
+
+    @Test
+    void test5() {
+        int supplierId= 1;
+        Supplier supplier = new Supplier(supplierId, "Ejm", "Poas","7207607090");
+        Product product = new Product(null, "Lizano", LocalDate.now().plusDays(1), 4500, supplier);
         productService.add(product);
         verify(productRepository, times(1)).save(product);
         verifyNoMoreInteractions(productRepository);
-
-
     }
 
     @Test
@@ -84,10 +98,16 @@ public class ProductServiceTest {
 
         verifyNoInteractions(productRepository);
     }
-
     @Test
     void testModify3() {
-        Product product = new Product(1, "Pasta", LocalDate.now().plusDays(1), 4500);
+        Product product = new Product(1, "Lizano", LocalDate.now().plusDays(1), 4500);
+        final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> productService.modify(product));
+        assertEquals("Supplier does not exist", exception.getMessage());
+        verifyNoMoreInteractions(productRepository);
+    }
+    @Test
+    void testModify4() {
+        Product product = new Product(1, "Pasta", LocalDate.now().plusDays(1), 4500, new Supplier());
         productService.modify(product);
         verify(productRepository, times(1)).save(product);
         verifyNoMoreInteractions(productRepository);
@@ -97,10 +117,10 @@ public class ProductServiceTest {
 
     @Test
     void testDelete1() {
-        Integer id = null;
+        Integer id = 1;
         final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> productService.delete(id));
         assertEquals("The product does not exist", exception.getMessage());
-        verify(productRepository, times(1)).getProduct(id);
+        verify(productRepository, times(1)).findById(id);
         verifyNoMoreInteractions(productRepository);
     }
 
@@ -109,10 +129,10 @@ public class ProductServiceTest {
         Integer id = 2;
 
         Product product = new Product(id);
-        when(productRepository.getProduct(id)).thenReturn(product);
+        when(productRepository.findById(id)).thenReturn(Optional.of(product));
         productService.delete(id);
-        verify(productRepository, times(1)).getProduct(id);
-        verify(productRepository, times(1)).delete(id);
+        verify(productRepository, times(1)).findById(id);
+        verify(productRepository, times(1)).deleteById(id);
         verifyNoMoreInteractions(productRepository);
     }
 
@@ -120,10 +140,10 @@ public class ProductServiceTest {
     void testGet1() {
         int id = 1;
         Product product = new Product(id);
-        when(productRepository.getProduct(id)).thenReturn(product);
-        Product result = productService.get(id);
-        assertEquals(product, result);
-        verify(productRepository, times(1)).getProduct(id);
+        when(productRepository.findById(id)).thenReturn(Optional.of(product));
+        Optional<Product> result = productService.getProduct(id);
+        assertEquals(Optional.of(product), result);
+        verify(productRepository, times(1)).findById(id);
         verifyNoMoreInteractions(productRepository);
     }
 }

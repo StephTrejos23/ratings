@@ -6,6 +6,8 @@ import io.javabrains.ratingsdataservice.repository.SupplierRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ProductService {
@@ -28,7 +30,7 @@ public class ProductService {
         if (product.getPrice() <= 0) { // verificar que el price sea mayor a cero, si no es mayor a cero, retornar excepcion
             throw new IllegalArgumentException("The price of the product cannot be 0!");
         }
-        if(product.getSupplier() != null){
+        if (product.getSupplier() == null) {
             throw new IllegalArgumentException("Supplier does not exist");
         }
         productRepository.save(product);
@@ -47,7 +49,7 @@ public class ProductService {
         if (LocalDate.now().isAfter(product.getExpirationDate())) {
             System.out.println("The product is expired");
         }
-        if(product.getSupplier() != null){
+        if (product.getSupplier() == null) {
             throw new IllegalArgumentException("Supplier does not exist");
         }
 
@@ -55,20 +57,28 @@ public class ProductService {
     }
 
     public void delete(Integer id) {
-        if (productRepository.getProduct(id) == null) {
+        if (productRepository.findById(id).isEmpty()) {
             throw new IllegalArgumentException("The product does not exist");
         }
-        productRepository.delete(id);
-    }
-
-    public Product get(Integer id) {
-
-        return productRepository.getProduct(id);
+        productRepository.deleteById(id);
     }
 
     public boolean existFor(int id) {
 
-        return productRepository.getProduct(id) != null;
+        return productRepository.findById(id).isPresent();
+    }
+
+    public Optional<Product> getProduct(Integer id) {
+
+        return productRepository.findById(id);
+    }
+
+    public boolean existProduct(Integer id) {
+        return getProduct(id).isPresent();
+    }
+
+    public List<Product> getProducts() {
+        return productRepository.findAll();
     }
 
 }

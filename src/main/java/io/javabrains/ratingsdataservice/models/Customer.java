@@ -1,20 +1,26 @@
 package io.javabrains.ratingsdataservice.models;
 
+import jakarta.persistence.*;
+
 import java.time.LocalDate;
 
+@Entity
 public class Customer {
 
-    public enum Language{
-        ENGLISH, SPANISH
-        //ID, BIRTHDATE, FIRSTNAME, LASTNAME, PHONE, EMAIL, LANGUAGE
-    };
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+    @Column(name = "first_name")
     private String firstName;
+    @Column(name = "last_name")
     private String lastName;
-
+    @Column(name = "birth_date")
     private LocalDate birthDate;
+    @Column(name = "phone")
     private String phone;
+    @Column(name = "email")
     private String email;
+    @Column(name = "language")
     private Language language;
 
     public Customer() {

@@ -1,6 +1,7 @@
 package io.javabrains.ratingsdataservice.model;
 
 import io.javabrains.ratingsdataservice.models.Customer;
+import io.javabrains.ratingsdataservice.models.Language;
 import io.javabrains.ratingsdataservice.models.Product;
 import io.javabrains.ratingsdataservice.repository.CustomerRepository;
 import io.javabrains.ratingsdataservice.services.CustomerService;
@@ -16,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -32,7 +34,7 @@ public class CustomerTest {
 
     @Test
     void testAdd1() {
-        Customer customer = new Customer(1, "Steph", "Trejos", LocalDate.of(2001, 10, 3), "72076070", "stephgmail.com", Customer.Language.ENGLISH);
+        Customer customer = new Customer(1, "Steph", "Trejos", LocalDate.of(2001, 10, 3), "72076070", "stephgmail.com", Language.ENGLISH);
 //        customer.setEmail(null);
         final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> customerService.addCustomer(customer));
         assertEquals("Email must contain an @.", exception.getMessage());
@@ -40,7 +42,7 @@ public class CustomerTest {
 
     @Test
     void testAdd2() {
-        Customer customer = new Customer(1, "Steph", "Trejos", LocalDate.of(2001, 10, 3), "72076070", "steph@gmail.com", Customer.Language.ENGLISH);
+        Customer customer = new Customer(1, "Steph", "Trejos", LocalDate.of(2001, 10, 3), "72076070", "steph@gmail.com", Language.ENGLISH);
         final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> customerService.addCustomer(customer));
         assertEquals("Phone must contain 10 digits.", exception.getMessage());
         verifyNoMoreInteractions(customerRepository);
@@ -49,9 +51,9 @@ public class CustomerTest {
     @ParameterizedTest
     @EmptySource
 //    @NullAndEmptySource
-    @ValueSource(strings = {"72076070","720760700k"})
+    @ValueSource(strings = {"72076070", "720760700k"})
     void testAddParameterized(String phone) {
-        Customer customer = new Customer(1, "Steph", "Trejos", LocalDate.of(2001, 10, 3), phone, "steph@gmail.com", Customer.Language.ENGLISH);
+        Customer customer = new Customer(1, "Steph", "Trejos", LocalDate.of(2001, 10, 3), phone, "steph@gmail.com", Language.ENGLISH);
         final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> customerService.addCustomer(customer));
         assertEquals("Phone must contain 10 digits.", exception.getMessage());
         verifyNoMoreInteractions(customerRepository);
@@ -59,7 +61,7 @@ public class CustomerTest {
 
     @Test
     void testAdd3() {
-        Customer customer = new Customer(1, "Steph", "Trejos", LocalDate.of(2001, 10, 3), "720760700k", "steph@gmail.com", Customer.Language.ENGLISH);
+        Customer customer = new Customer(1, "Steph", "Trejos", LocalDate.of(2001, 10, 3), "720760700k", "steph@gmail.com", Language.ENGLISH);
         final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> customerService.addCustomer(customer));
         assertEquals("Phone must contain 10 digits.", exception.getMessage());
         verifyNoMoreInteractions(customerRepository);
@@ -67,7 +69,7 @@ public class CustomerTest {
 
     @Test
     void testAdd4() {
-        Customer customer = new Customer(1, "Steph", "Trejos", LocalDate.of(2001, 10, 3), "7207607058", "steph@gmail.com", Customer.Language.ENGLISH);
+        Customer customer = new Customer(1, "Steph", "Trejos", LocalDate.of(2001, 10, 3), "7207607058", "steph@gmail.com", Language.ENGLISH);
         customerService.addCustomer(customer);
         verify(customerRepository, times(1)).save(customer);
         verifyNoMoreInteractions(customerRepository);
@@ -76,21 +78,21 @@ public class CustomerTest {
     @Test
     void testModify1() {
         int id = 1;
-        Customer customer = new Customer(1, "Steph", "Trejos", LocalDate.of(2001, 10, 3), "7207607058", "steph@gmail.com", Customer.Language.ENGLISH);
+        Customer customer = new Customer(1, "Steph", "Trejos", LocalDate.of(2001, 10, 3), "7207607058", "steph@gmail.com", Language.ENGLISH);
 
         final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> customerService.modifyCustomer(customer));
         assertEquals("The customer does not exist", exception.getMessage());
-        verify(customerRepository, times(1)).getCustomer(id);
+        verify(customerRepository, times(1)).findById(id);
         verifyNoMoreInteractions(customerRepository);
     }
 
     @Test
     void testModify2() {
         int id = 1;
-        Customer customer = new Customer(id, "Steph", "Trejos", LocalDate.of(2001, 10, 3), "7207607058", "steph@gmail.com", Customer.Language.ENGLISH);
-        when(customerRepository.getCustomer(id)).thenReturn(customer);
+        Customer customer = new Customer(id, "Steph", "Trejos", LocalDate.of(2001, 10, 3), "7207607058", "steph@gmail.com", Language.ENGLISH);
+        when(customerRepository.findById(id)).thenReturn(Optional.of(customer));
         customerService.modifyCustomer(customer);
-        verify(customerRepository, times(1)).getCustomer(id);
+        verify(customerRepository, times(1)).findById(id);
         verify(customerRepository, times(1)).save(customer);
         verifyNoMoreInteractions(customerRepository);
     }
@@ -99,11 +101,11 @@ public class CustomerTest {
     void testDelete1() {
         int id = 1;
 
-        Customer customer = new Customer(1, "Steph", "Trejos", LocalDate.of(2001, 10, 3), "7207607058", "steph@gmail.com", Customer.Language.ENGLISH);
-        when(customerRepository.getCustomer(id)).thenReturn(customer);
+        Customer customer = new Customer(1, "Steph", "Trejos", LocalDate.of(2001, 10, 3), "7207607058", "steph@gmail.com", Language.ENGLISH);
+        when(customerRepository.findById(id)).thenReturn(Optional.of(customer));
         customerService.deleteCustomer(id);
-        verify(customerRepository, times(1)).getCustomer(id);
-        verify(customerRepository, times(1)).delete(id);
+        verify(customerRepository, times(1)).findById(id);
+        verify(customerRepository, times(1)).deleteById(id);
         verifyNoMoreInteractions(customerRepository);
     }
 
@@ -112,20 +114,18 @@ public class CustomerTest {
         int id = 1;
         final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> customerService.deleteCustomer(id));
         assertEquals("The customer does not exist", exception.getMessage());
-        verify(customerRepository, times(1)).getCustomer(id);
+        verify(customerRepository, times(1)).findById(id);
         verifyNoMoreInteractions(customerRepository);
     }
 
     @Test
     void testGet1() {
         int id = 1;
-        Customer customer = new Customer(1, "Steph", "Trejos", LocalDate.of(2001, 10, 3), "7207607058", "steph@gmail.com", Customer.Language.ENGLISH);
-        when(customerRepository.getCustomer(id)).thenReturn(customer);
-        Customer resultado = customerService.getCustomer(id);
-
-        //assertEquals entre customer y resultado
-
-        verify(customerRepository, times(1)).getCustomer(id);
+        Customer customer = new Customer(1, "Steph", "Trejos", LocalDate.of(2001, 10, 3), "7207607058", "steph@gmail.com", Language.ENGLISH);
+        when(customerRepository.findById(id)).thenReturn(Optional.of(customer));
+        Optional<Customer> resultado = customerService.getCustomer(id);
+        assertEquals(Optional.of(customer), resultado);
+        verify(customerRepository, times(1)).findById(id);
         verifyNoMoreInteractions(customerRepository);
     }
 
@@ -142,7 +142,7 @@ public class CustomerTest {
 
     @ParameterizedTest
     @ValueSource(ints = {1, 2})
-    void testplusUnion(int number){
+    void testplusUnion(int number) {
 
         //assertEquals(number + 1, customerService.plusOne(number));
         int result = customerService.plusOne(number);
@@ -151,8 +151,8 @@ public class CustomerTest {
 
     @ParameterizedTest
     @CsvSource({"10, 5", "20, 10", "30, 5"})
-    void testdivision(int value1, int value2){
+    void testdivision(int value1, int value2) {
         int result = customerService.division(value1, value2);
-        assertEquals(value1/value2, result);
+        assertEquals(value1 / value2, result);
     }
 }
