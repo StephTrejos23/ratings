@@ -2,12 +2,17 @@ package io.javabrains.ratingsdataservice.controller;
 
 import static io.javabrains.ratingsdataservice.util.TestUtil.getObjectMapper;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -15,6 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import io.javabrains.ratingsdataservice.models.Customer;
 import io.javabrains.ratingsdataservice.models.Language;
@@ -42,111 +48,199 @@ import org.springframework.web.context.WebApplicationContext;
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@AutoConfigureTestDatabase
 class CustomerControllerIntegrationTest {
 
-    private static final ObjectMapper OBJECT_MAPPER = getObjectMapper();
+  private static final ObjectMapper OBJECT_MAPPER = getObjectMapper();
 
-    private static final String BASE_URL_V1 = "/api/v1/";
-    private static final String BASE_URL_V1_CUSTOMER = BASE_URL_V1 + "customer";
+  private static final String BASE_URL_V1 = "/api/v1/";
+  private static final String BASE_URL_V1_CUSTOMER = BASE_URL_V1 + "customer";
 
-    private MockMvc mockMvc;
+  private MockMvc mockMvc;
 
-    @Autowired
-    private WebApplicationContext context;
+  @Autowired
+  private WebApplicationContext context;
 
-    @Autowired
-    private CustomerRepository customerRepository;
+  @Autowired
+  private CustomerRepository customerRepository;
 
-    private Customer customer;
+  private Customer customer;
 
-    @BeforeEach
-    public void setUp() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
+  @BeforeEach
+  public void setUp() {
+    mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
 
-        customer = getCustomer();
-    }
+    customerRepository.deleteAll();
 
-    @Test
-    void testWhenSavingCustomerResponseOk() throws Exception {
-        // given
-//        customerRepository.save(getCustomer());
+    customer = getCustomer();
+  }
 
-        // when -> then
-        mockMvc
-                .perform(post(BASE_URL_V1_CUSTOMER).contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(OBJECT_MAPPER.writeValueAsString(customer)))
-                .andDo(print()).andExpect(status().isOk());
+  @Test
+  void testWhenSavingCustomerResponseOk() throws Exception {
+    // given
+    customer.setId(0);
 
-        // ok o 200 = todo ok
-        // 400 = error metiendo un dato
+    // when -> then
+    mockMvc
+        .perform(post(BASE_URL_V1_CUSTOMER).contentType(MediaType.APPLICATION_JSON_VALUE)
+            .content(OBJECT_MAPPER.writeValueAsString(customer)))
+        .andDo(print()).andExpect(status().isCreated());
 
-        final var customers = customerRepository.findAll();
-        System.out.println(customers);
-//        final var customer = customerRepository.findById(CUSTOMER_ID).orElseThrow();
-//
-//        assertThat(customer.getId(), equalTo(1090L));
-//        assertThat(customer.getFirstName(), equalTo("Joe"));
-//        assertThat(customer.getLastName(), equalTo("Smith"));
-//        assertThat(customer.getBirthDate(), equalTo(LocalDate.of(1990, 1, 1)));
-//        assertThat(customer.getPhone(), equalTo("72076070"));
-//        assertThat(customer.getEmail(), equalTo("steph@gmail.com"));
-//        assertThat(customer.getLanguage(), equalTo("ENGLISH"));
-    }
+    final List<Customer> customers = customerRepository.findAll();
+    assertEquals(1, customers.size());
+  }
 
-//    @Test
-//    void testOkWhenCustomerIsUpdatedAndPhoneNumberDoesNotExist() throws Exception {
-//        // given
-//        customerRepository.save(getCustomer(false));
-//        customerPhoneRepository.saveAll(getCustomerPhones(true));
-//        customerRequest.setPhoneNumber("9991991991");
-//
-//        // when -> then
-//        mockMvc
-//                .perform(patch(BASE_URL_V1 + CUSTOMER_ID).contentType(MediaType.APPLICATION_JSON_VALUE)
-//                        .content(OBJECT_MAPPER.writeValueAsString(customerRequest)))
-//                .andDo(print()).andExpect(status().isOk());
-//
-//        final var customer = customerRepository.findById(CUSTOMER_ID).orElseThrow();
-//
-//        assertThat(customer.getId(), equalTo(1090L));
-//        assertThat(customer.getFirstName(), equalTo("Joe"));
-//        assertThat(customer.getMiddleName(), equalTo("J"));
-//        assertThat(customer.getLastName(), equalTo("Smith"));
-//        assertThat(customer.getBirthDt(), equalTo(LocalDate.of(1990, 1, 1)));
-//        assertThat(customer.getSocialSecurityNumber(), equalTo("1234567890"));
-//        assertThat(customer.getEmail1(), equalTo("test@snapfinance.com"));
-//        assertThat(customer.getYearsAtCurrentResidence(), equalTo(1));
-//        assertThat(customer.getMonthsAtCurrentResidence(), equalTo(6));
-//        assertThat(customer.getStreetAddress(), equalTo("Some Address"));
-//        assertThat(customer.getUnit(), equalTo("Unit"));
-//        assertThat(customer.getCity(), equalTo("Miami"));
-//        assertThat(customer.getState(), equalTo(State.FL));
-//        assertThat(customer.getZipCode(), equalTo("4455"));
-//
-//        final var customerPhones = customerPhoneRepository.findAllByCustomer(customer);
-//
-//        assertTrue(customerPhones.stream()
-//                .anyMatch(s -> s.getPhoneNumber().equals("9991991991") && s.isPrimary()));
-//        assertTrue(customerPhones.stream()
-//                .anyMatch(s -> s.getPhoneNumber().equals("8432171263") && !s.isPrimary()));
-//        assertTrue(customerPhones.stream()
-//                .anyMatch(s -> s.getPhoneNumber().equals("4436803398") && !s.isPrimary()));
-//        assertTrue(customerPhones.stream()
-//                .anyMatch(s -> s.getPhoneNumber().equals("3137179590") && !s.isPrimary()));
-//    }
+  @Test
+  void testWhenSavingCustomerAndIdIsSetThenResponseBadRequest() throws Exception {
+    // given
+    customer.setId(1);
 
-//    @Test
-//    void testNotFoundWhenCustomerDoesNotExist() throws Exception {
-//        // when -> then
-//        mockMvc
-//                .perform(patch(BASE_URL_V1 + 0).contentType(MediaType.APPLICATION_JSON_VALUE)
-//                        .content(OBJECT_MAPPER.writeValueAsString(customer)))
-//                .andDo(print()).andExpect(status().isNotFound())
-//                .andExpect(jsonPath("$.message").value("Resource Not Found Exception: Customer not found"));
-//    }
+    // when -> then
+    mockMvc
+        .perform(post(BASE_URL_V1_CUSTOMER).contentType(MediaType.APPLICATION_JSON_VALUE)
+            .content(OBJECT_MAPPER.writeValueAsString(customer)))
+        .andDo(print()).andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.message").value(containsString("Invalid client exception: Id must be 0.")));
 
-    private Customer getCustomer() {
-        return new Customer(1, "Steph", "Trejos", LocalDate.of(2001, 10, 3), "72076070", "stephgmail.com", Language.ENGLISH);
-    }
+    final List<Customer> customers = customerRepository.findAll();
+    assertEquals(0, customers.size());
+  }
+
+  @Test
+  void testWhenVerifyingEmailThenResponseBadRequest() throws Exception {
+    // given
+    customer.setId(0);
+    customer.setEmail("stephgmail.com");
+
+    // when -> then
+    mockMvc
+        .perform(post(BASE_URL_V1_CUSTOMER).contentType(MediaType.APPLICATION_JSON_VALUE)
+            .content(OBJECT_MAPPER.writeValueAsString(customer)))
+        .andDo(print()).andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.message").value(containsString("Invalid client exception: Email must contain an @.")));
+
+    final List<Customer> customers = customerRepository.findAll();
+    assertEquals(0, customers.size());
+  }
+
+  @Test
+  void testWhenVerifyingPhoneWithLettersThenResponseBadRequest() throws Exception {
+    customer.setId(0);
+    customer.setPhone("70205033s76");
+
+    // when -> then
+    mockMvc
+        .perform(post(BASE_URL_V1_CUSTOMER).contentType(MediaType.APPLICATION_JSON_VALUE)
+            .content(OBJECT_MAPPER.writeValueAsString(customer)))
+        .andDo(print()).andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.message").value(containsString("Invalid client exception: Phone must contain 10 digits.")));
+
+    final List<Customer> customers = customerRepository.findAll();
+    assertEquals(0, customers.size());
+  }
+
+  @Test
+  void testWhenUpdatingCustomerThenResponseOk() throws Exception {
+    // given
+    customerRepository.save(customer);
+    customer.setFirstName("Jose");
+
+    // when -> then
+    mockMvc
+        .perform(put(BASE_URL_V1_CUSTOMER + "/" + customer.getId())
+            .contentType(MediaType.APPLICATION_JSON_VALUE).content(OBJECT_MAPPER.writeValueAsString(customer)))
+        .andDo(print()).andExpect(status().isOk());
+
+    final var result = customerRepository.findById(customer.getId()).orElseThrow();
+
+    assertThat(result.getId(), equalTo(1));
+    assertThat(result.getFirstName(), equalTo("Jose"));
+    assertThat(result.getLastName(), equalTo("Trejos"));
+    assertThat(result.getBirthDate(), equalTo(LocalDate.of(2001, 10, 3)));
+    assertThat(result.getPhone(), equalTo("7207622070"));
+    assertThat(result.getEmail(), equalTo("steph@gmail.com"));
+    assertThat(result.getLanguage(), equalTo(Language.ENGLISH));
+  }
+
+  @Test
+  void testWhenUpdatingCustomerDoesNotExistThenResponseNotFound() throws Exception {
+    // when -> then
+    mockMvc
+        .perform(put( BASE_URL_V1_CUSTOMER + "/" + 0).contentType(MediaType.APPLICATION_JSON_VALUE)
+            .content(OBJECT_MAPPER.writeValueAsString(customer)))
+        .andDo(print()).andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.message").value("Resource not found exception: The customer does not exist"));
+  }
+  @Test
+  void testWhenDeletingCustomerResponseOk() throws Exception {
+    // given
+    customerRepository.save(customer);
+    int customerId = customerRepository.findAll().stream().map(Customer::getId).findFirst().orElse(1);
+
+    // when -> then
+    mockMvc
+        .perform(delete(BASE_URL_V1_CUSTOMER+ "/" + customerId))
+        .andDo(print()).andExpect(status().isOk());
+
+    final List<Customer> customers = customerRepository.findAll();
+    assertEquals(0, customers.size());
+  }
+
+  @Test
+  void testWhenDeletingCustomerThenResponseBadRequest() throws Exception {
+    // when -> then
+    mockMvc
+        .perform(delete( BASE_URL_V1_CUSTOMER + "/" + 12))
+        .andDo(print()).andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.message").value("Resource not found exception: The customer does not exist"));
+  }
+
+  @Test
+  void testWhenGettingCustomersResponseOk() throws Exception {
+    // given
+    customerRepository.save(customer);
+    int customerId = customerRepository.findAll().stream().map(Customer::getId).findFirst().orElse(1);
+    // when -> then
+    mockMvc
+        .perform(get(BASE_URL_V1 + "/" + "customers"))
+        .andDo(print()).andExpect(status().isOk())
+        .andExpect(jsonPath("$.[0].id",equalTo(customerId)))
+        .andExpect(jsonPath("$.[0].firstName",equalTo("Steph")))
+        .andExpect(jsonPath("$.[0].lastName",equalTo("Trejos")))
+        .andExpect(jsonPath("$.[0].birthDate",equalTo("2001-10-03")))
+        .andExpect(jsonPath("$.[0].phone",equalTo("7207622070")))
+        .andExpect(jsonPath("$.[0].email",equalTo("steph@gmail.com")))
+        .andExpect(jsonPath("$.[0].language",equalTo("ENGLISH")));
+  }
+
+  @Test
+  void testWhenGettingCustomerThenResponseBadRequest() throws Exception {
+    // when -> then
+    mockMvc
+        .perform(get(BASE_URL_V1_CUSTOMER + "/" + 1))
+        .andDo(print()).andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.message").value(containsString("Resource not found exception: The customer does not exist")));
+  }
+
+  @Test
+  void testWhenGettingCustomerThenResponseIsOk() throws Exception {
+    //given
+    customerRepository.save(customer);
+    int customerId = customerRepository.findAll().stream().map(Customer::getId).findFirst().orElse(1);
+    // when -> then
+    mockMvc
+        .perform(get(BASE_URL_V1_CUSTOMER + "/" + customerId))
+        .andDo(print()).andExpect(status().isOk())
+        .andExpect(jsonPath("$.id",equalTo(customerId)))
+        .andExpect(jsonPath("$.firstName",equalTo("Steph")))
+        .andExpect(jsonPath("$.lastName",equalTo("Trejos")))
+        .andExpect(jsonPath("$.birthDate",equalTo("2001-10-03")))
+        .andExpect(jsonPath("$.phone",equalTo("7207622070")))
+        .andExpect(jsonPath("$.email",equalTo("steph@gmail.com")))
+        .andExpect(jsonPath("$.language",equalTo("ENGLISH")));
+  }
+
+  private Customer getCustomer() {
+    return new Customer(1, "Steph", "Trejos", LocalDate.of(2001, 10, 3), "7207622070", "steph@gmail.com", Language.ENGLISH);
+  }
 }

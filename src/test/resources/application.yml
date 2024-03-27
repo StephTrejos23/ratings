@@ -1,0 +1,17 @@
+spring:
+  jpa:
+    database: h2
+    show-sql: true
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        default_schema: public
+        connection:
+          url: jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;INIT=CREATE SCHEMA IF NOT EXISTS example_db
+      username: sa
+      password:
+  sql:
+    init:
+      mode: always
+spring.jpa.defer-datasource-initialization: true

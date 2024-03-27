@@ -1,16 +1,13 @@
-package io.javabrains.ratingsdataservice.model;
+package io.javabrains.ratingsdataservice.services;
 
 import io.javabrains.ratingsdataservice.models.Customer;
 import io.javabrains.ratingsdataservice.models.Language;
-import io.javabrains.ratingsdataservice.models.Product;
 import io.javabrains.ratingsdataservice.repository.CustomerRepository;
-import io.javabrains.ratingsdataservice.services.CustomerService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EmptySource;
-import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -25,7 +22,7 @@ import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
-public class CustomerTest {
+public class CustomerServiceTest {
 
     @Mock
     private CustomerRepository customerRepository;
